@@ -6,10 +6,12 @@ public class Monopoly {
 	private static int playersCount;
 	private static String[] playerNames = new String[4];
 	private static int[] playersCurrentPosition = { 0, 0, 0, 0 };
-	private static int[] diceThrown = new int[4];
-	private static int[] playersMoney = {1000, 1000, 1000, 1000};
+	// private static int[] diceThrown = new int[4];
+	private static int[] playersMoney = { 0, 0, 0, 0 };
+	private static boolean[] hasMoney = { false, false, false, false };
 	private static Scanner sc = new Scanner(System.in);
 	private static Scanner sc2 = new Scanner(System.in);
+	private static Scanner sc3 = new Scanner(System.in);
 	private static String[] board = { "Beginning", "Mediterranean Avenue", "Community Chest", "Baltic Avenue",
 			"Incoming tax, you must pay 200$", "Reading Railrod", "Oriental Avenue", "CHANCE", "Vermont Avenue",
 			"Connecticut Avenue", "IN JAIL!", "St. Charles Place", "Electric Company", "States Avenue",
@@ -21,46 +23,103 @@ public class Monopoly {
 	private static int[] pricesAndTaxes = { 200, 60, -1, 60, -200, 200, 100, -1, 100, 120, -1, 140, 150, 140, 160, 200,
 			180, -1, 180, 200, -1, 220, -1, 220, 240, 200, 260, 260, 150, 280, -1, 300, 300, -1, 320, 200, -1, 350,
 			-100, 400 };
+	private static int[] ownedProperties = { -3, -1, -2, -1, -200, -1, -1, -2, -1, -1, -2, -1, -1, -1, -1, -1, -1, -2,
+			-1, -1, -2, -1, -2, -1, -1, -1, -1, -1, -1, -1, -2, -1, -1, -2, -1, -1, -2, -1, -100, -1 };
 
 	public static void main(String[] args) {
 
 		StartGame();
-		// System.out.println(board.length);
-		// System.out.println(pricesAndTaxes.length);
+		System.out.println(board.length);
+		System.out.println(pricesAndTaxes.length);
+		System.out.println(ownedProperties.length);
 	}
 
 	private static void StartGame() {
+
 		PlayersCount();
 		PlayerNames();
-		while (true) {
-
-			ThrowDice();
-			//there are still money or players on the field
+		StartingMoney();
+		while (hasMoney[0] || hasMoney[1] || hasMoney[2] || hasMoney[3]) {
+			Engine();
 		}
-
 	}
 
-	private static void ThrowDice() {
+	private static void StartingMoney() {
+		for (int i = 0; i < playersCount; i++) {
+			playersMoney[i] = 2000;
+			hasMoney[i] = true;
+		}
+	}
+
+	private static void Engine() {
 
 		Random rd = new Random();
 
 		for (int player = 0; player < playersCount; player++) {
-			System.out.printf("%s press enter to throw the dice!\n", playerNames[player]);
-			sc.nextLine();
-			int moves = rd.nextInt(6) + 1;
-			System.out.printf("You have thrown: %d!\n", moves);
-			// diceThrown[i] = n;
-			// method for the board
-			Move(player, moves);
-			System.out.printf("%s you are on %s and it costs %d\n\n", playerNames[player], board[playersCurrentPosition[player]], pricesAndTaxes[playersCurrentPosition[player]]);
+			if (hasMoney[player] == true) {
+				System.out.printf("%s press enter to throw the dice!\n", playerNames[player]);
+				sc.nextLine();
+				int moves = rd.nextInt(6) + 1;
+				System.out.printf("You have thrown: %d!\n", moves);
+				Move(player, moves);
+				MoneyLending(player);
+				ManageProperties(player);
+				
+			}
+		}
+	}
+	private static void MoneyLending(int player){
+		int temp = ownedProperties[playersCurrentPosition[player]];
+
+		if (temp != player && (temp <= 3 && temp >= 0)) {
+			int tax = pricesAndTaxes[playersCurrentPosition[player]] / 5;
+			//System.out.println("gosho");
+			System.out.printf("You are on %s which belongs to %s and you must pay %d$\n", board[playersCurrentPosition[player]], playerNames[ownedProperties[playersCurrentPosition[player]]], tax);
+			playersMoney[player] = playersMoney[player] - tax;
+		}
+	}
+
+	private static void ManageProperties(int player) {
+		System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
+		if (pricesAndTaxes[playersCurrentPosition[player]] < -5) {
+			System.out.printf("You are on %s!\n\n", board[playersCurrentPosition[player]]);
+			playersMoney[player] = playersMoney[player] + pricesAndTaxes[playersCurrentPosition[player]];
+			if (playersMoney[player] <= 0) {
+				hasMoney[player] = false;
+				System.out.printf("%s has bankrupt!\n\n", playerNames[player]);
+			}
+		} else if (ownedProperties[playersCurrentPosition[player]] == -1
+				&& playersMoney[player] > pricesAndTaxes[playersCurrentPosition[player]]) {
+			System.out.printf("You are on %s and it costs %d$.\n", board[playersCurrentPosition[player]],
+					pricesAndTaxes[playersCurrentPosition[player]]);
+			System.out.print("Would you like to buy this property? ");
+
+			if (sc3.nextLine().equalsIgnoreCase("yes")) {
+				ownedProperties[playersCurrentPosition[player]] = player;
+				playersMoney[player] = playersMoney[player] - pricesAndTaxes[playersCurrentPosition[player]];
+				System.out.println("Property bought!\n");
+			} else {
+				System.out.println("You have not bought this property!\n");
+			}
+		} else if ((ownedProperties[playersCurrentPosition[player]] == -2)) {
+			// to implement
+			System.out.println("Card!\n");
+		}else if (ownedProperties[playersCurrentPosition[player]] == -3) {
+			System.out.printf("You are on the %s.\n", board[playersCurrentPosition[player]]);
+		}
+		else {
+			System.out.printf("You are on %s, but you don't have enough money to buy this property!\n\n", board[playersCurrentPosition[player]]);
 		}
 	}
 
 	private static int Move(int player, int moves) {
+
 		int temp = playersCurrentPosition[player] += moves;
 		if (temp < 40) {
 			return playersCurrentPosition[player];
 		} else {
+			System.out.println("You have passed the start and you get 200$");
+			playersMoney[player] += 200;
 			return playersCurrentPosition[player] = playersCurrentPosition[player] - 40;
 		}
 	}
