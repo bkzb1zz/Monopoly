@@ -6,10 +6,11 @@ public class Monopoly {
 	private static int playersCount;
 	private static String[] playerNames = new String[4];
 	private static int[] playersCurrentPosition = { 0, 0, 0, 0 };
-	// private static int[] diceThrown = new int[4];
 	private static int[] playersMoney = { 0, 0, 0, 0 };
 	private static boolean[] hasMoney = { false, false, false, false };
-	private static boolean[] isInJail = { false, false, false, false };
+	private static final int ESCAPEJAILPRICE = 50;
+	private static int[] jailCount = { 0, 0, 0, 0 };
+	private static boolean[] isInJail = { false, false, false, false};
 	private static Scanner sc = new Scanner(System.in);
 	private static Scanner sc2 = new Scanner(System.in);
 	private static Scanner sc3 = new Scanner(System.in);
@@ -18,27 +19,22 @@ public class Monopoly {
 			"Connecticut Avenue", "IN JAIL!", "St. Charles Place", "Electric Company", "States Avenue",
 			"Virginia Avenue", "Pennsylvania Railroad", "St. James Place", "Community Chest", "Tennessee Avenue",
 			"New York Avenue", "FREE PARKING", "Kentucky Avenue", "CHANCE", "Indiana Avenue", "Illinois Avenue",
-			"B. & O. Railroad", "Aplantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "IN JAIL",
+			"B. & O. Railroad", "Aplantic Avenue", "Ventnor Avenue", "Water Works", "Marvin Gardens", "IN JAIL!",
 			"Pacific Avenue", "North Carolina Avenue", "Community Chest", "Pennsylvania Avenue", "Short Line", "CHANCE",
 			"Park Place", "Luxury Tax, you must pay 100$", "Boardwalk" };
 	private static int[] pricesAndTaxes = { 200, 60, -1, 60, -200, 200, 100, -1, 100, 120, -1, 140, 150, 140, 160, 200,
 			180, -1, 180, 200, -1, 220, -1, 220, 240, 200, 260, 260, 150, 280, -1, 300, 300, -1, 320, 200, -1, 350,
 			-100, 400 };
-	private static int[] ownedProperties = { -3, -1, -2, -1, -200, -1, -1, -2, -1, -1, -2, -1, -1, -1, -1, -1, -1, -2,
-			-1, -1, -2, -1, -2, -1, -1, -1, -1, -1, -1, -1, -2, -1, -1, -2, -1, -1, -2, -1, -100, -1 };
+	private static int[] ownedProperties = { -3, -1, -2, -1, -200, -1, -1, -2, -1, -1, -4, -1, -1, -1, -1, -1, -1, -2,
+			-1, -1, -2, -1, -2, -1, -1, -1, -1, -1, -1, -1, -4, -1, -1, -2, -1, -1, -2, -1, -100, -1 };
 
 	public static void main(String[] args) {
 
 		// to add
-		// Jail
+		// Jail - to add escaping by rolling 6, remove previous method
 		// Cards
-		// Sell properties
-		// Update tax
-		// Fix money updates - to show money after update
+
 		StartGame();
-		// System.out.println(board.length);
-		// System.out.println(pricesAndTaxes.length);
-		// System.out.println(ownedProperties.length);
 	}
 
 	private static void StartGame() {
@@ -68,6 +64,10 @@ public class Monopoly {
 				sc.nextLine();
 				int moves = rd.nextInt(6) + 1;
 				System.out.printf("You have thrown: %d!\n", moves);
+				if (isInJail[player] == true && moves == 6) {
+					System.out.println("Congratulations, you get out of JAIL, because you rolled 6");
+					isInJail[player] = false;
+				}
 				Move(player, moves);
 				MoneyLending(player);
 				ManageProperties(player);
@@ -93,49 +93,81 @@ public class Monopoly {
 	}
 
 	private static void ManageProperties(int player) {
-		int owned = ownedProperties[playersCurrentPosition[player]];
-		System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
 
-		if (pricesAndTaxes[playersCurrentPosition[player]] < -5) {
-			System.out.printf("You are on %s!\n", board[playersCurrentPosition[player]]);
-			playersMoney[player] = playersMoney[player] + pricesAndTaxes[playersCurrentPosition[player]];
-			System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
-			if (playersMoney[player] <= 0) {
-				hasMoney[player] = false;
-				System.out.printf("%s has bankrupt!\n\n", playerNames[player]);
-			}
-		} else if (owned == -1 && playersMoney[player] > pricesAndTaxes[playersCurrentPosition[player]]) {
-			System.out.printf("You are on %s and it costs %d$.\n", board[playersCurrentPosition[player]],
-					pricesAndTaxes[playersCurrentPosition[player]]);
-			System.out.print("Would you like to buy this property? ");
+		if (isInJail[player] == false) {
+			int owned = ownedProperties[playersCurrentPosition[player]];
+			System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
 
-			if (sc3.nextLine().equalsIgnoreCase("yes")) {
-				ownedProperties[playersCurrentPosition[player]] = player;
-				playersMoney[player] = playersMoney[player] - pricesAndTaxes[playersCurrentPosition[player]];
-				System.out.println("Property bought!");
+			if (pricesAndTaxes[playersCurrentPosition[player]] < -5) {
+				System.out.printf("You are on %s!\n", board[playersCurrentPosition[player]]);
+				playersMoney[player] = playersMoney[player] + pricesAndTaxes[playersCurrentPosition[player]];
 				System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
+				if (playersMoney[player] <= 0) {
+					hasMoney[player] = false;
+					System.out.printf("%s has bankrupt!\n\n", playerNames[player]);
+				}
+			} else if (owned == -1 && playersMoney[player] > pricesAndTaxes[playersCurrentPosition[player]]) {
+				System.out.printf("You are on %s and it costs %d$.\n", board[playersCurrentPosition[player]],
+						pricesAndTaxes[playersCurrentPosition[player]]);
+				System.out.print("Would you like to buy this property? ");
+
+				if (sc3.nextLine().equalsIgnoreCase("yes")) {
+					ownedProperties[playersCurrentPosition[player]] = player;
+					playersMoney[player] = playersMoney[player] - pricesAndTaxes[playersCurrentPosition[player]];
+					System.out.println("Property bought!");
+					System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
+				} else {
+					System.out.println("You have not bought this property!\n");
+				}
+			} else if ((owned == -2)) {
+				// to implement
+				System.out.println("Card!\n");
+			} else if (owned == -3) {
+				System.out.printf("You are on the %s.\n", board[playersCurrentPosition[player]]);
+			} else if (owned != 0 && owned != 1 && owned != 2 && owned != 3) {
+				System.out.printf("You are on %s, but you don't have enough money to buy this property!\n\n",
+						board[playersCurrentPosition[player]]);
+			} else if (ownedProperties[playersCurrentPosition[player]] == player) {
+				System.out.printf("You are on %s which belongs to you. Would you like to sell it for half it's price? ",
+						board[playersCurrentPosition[player]]);
+				if (sc3.nextLine().equalsIgnoreCase("yes")) {
+					ownedProperties[playersCurrentPosition[player]] = -1;
+					playersMoney[player] += pricesAndTaxes[playersCurrentPosition[player]] / 2;
+					System.out.printf("You have sold %s for %d$\n\n", board[playersCurrentPosition[player]],
+							pricesAndTaxes[playersCurrentPosition[player]] / 2);
+				}
 			} else {
-				System.out.println("You have not bought this property!\n");
+				System.out.println();
 			}
-		} else if ((owned == -2)) {
-			// to implement
-			System.out.println("Card!\n");
-		} else if (owned == -3) {
-			System.out.printf("You are on the %s.\n", board[playersCurrentPosition[player]]);
-		} else if (owned != 0 && owned != 1 && owned != 2 && owned != 3) {
-			System.out.printf("You are on %s, but you don't have enough money to buy this property!\n\n",
-					board[playersCurrentPosition[player]]);
+			IsInJail(player);
 		}
-		else if(ownedProperties[playersCurrentPosition[player]] == player){
-			System.out.printf("You are on %s which belongs to you. Would you like to sell it for half it's price? ", board[playersCurrentPosition[player]]);
-			if (sc3.nextLine().equalsIgnoreCase("yes")) {
-				ownedProperties[playersCurrentPosition[player]] = -1;
-				playersMoney[player] += pricesAndTaxes[playersCurrentPosition[player]] / 2;
-				System.out.printf("You have sold %s for %d$\n\n", board[playersCurrentPosition[player]], pricesAndTaxes[playersCurrentPosition[player]] / 2);
+	}
+
+	private static void IsInJail(int player) {
+		
+		if (ownedProperties[playersCurrentPosition[player]] == -4) {
+			if (isInJail[player] != true) {
+				jailCount[player] = 2;
+				isInJail[player] = true;
+			} else {
+				jailCount[player]--;
+				if (jailCount[player] == 0) {
+					isInJail[player] = false;
+				}
 			}
-		}
-		else {
-			System.out.println();
+			int tax = jailCount[player] * ESCAPEJAILPRICE;
+			System.out.printf("%s are in JAIL for %d turns!\n", playerNames[player], jailCount[player]);
+			if (playersMoney[player] > tax) {
+				System.out.printf("Would you like to go out for %d\n", tax);
+				if (sc3.nextLine().equalsIgnoreCase("yes")) {
+					System.out.println("Congratulations, you are out of JAIL!");
+					jailCount[player] = 0;
+					playersMoney[player] = playersMoney[player] - tax;
+				}
+			}
+			else {
+				System.out.println("Sorry, but you don't have enough money to go out of JAIL!");
+			}
 		}
 	}
 
