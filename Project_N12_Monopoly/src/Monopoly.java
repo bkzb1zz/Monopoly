@@ -110,7 +110,7 @@ public class Monopoly {
 
 		for (int i = 0; i < playersCount; i++) {
 
-			playersMoney[i] = 600;
+			playersMoney[i] = 1;
 			hasMoney[i] = true;
 
 		}
@@ -217,7 +217,17 @@ public class Monopoly {
 			if (playersMoney[player] <= 0) {
 
 				hasMoney[player] = false;
+				System.out.printf("%s has bankrupt!\n\n", playerNames[player]);
+				int save = SaveMe(player);
 
+				if (save + playersMoney[player] > 0) {
+
+					hasMoney[player] = true;
+					playersMoney[player] += save;
+					System.out.printf("%s's properties have been sold to the bank. He recieves half their price!",
+							playerNames[player]);
+
+				}
 			}
 		}
 	}
