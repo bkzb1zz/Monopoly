@@ -279,24 +279,28 @@ public class Monopoly {
 				switch (card) {
 
 				case 1:
+					
 					outOfJailCard[player] += 1;
 					System.out.println("You have won OUT OF JAIL CARD!");
 					System.out.printf("You currently have %d cards!\n\n", outOfJailCard[player]);
 					break;
 
 				case 2:
+					
 					playersMoney[player] += 100;
 					System.out.println("You have won 100$!");
 					PrintPlayerMoney(player);
 					break;
 
 				case 3:
+					
 					playersMoney[player] += 200;
 					System.out.println("You have won 200$!");
 					PrintPlayerMoney(player);
 					break;
 
 				case 4:
+					
 					playersMoney[player] += 200;
 					playersCurrentPosition[player] = 0;
 					System.out.printf("You go to the %s and you get 200$\n", board[0]);
@@ -304,8 +308,10 @@ public class Monopoly {
 					break;
 
 				case 5:
+					
 					playersCurrentPosition[player] = 10;
-					System.out.println("You go to JAIL\n!");
+					isInJail[player] = true;
+					System.out.println("You go to JAIL!\n");
 					break;
 
 				}
@@ -358,7 +364,6 @@ public class Monopoly {
 				ownedProperties[i] = -1;
 
 			}
-
 		}
 
 		return sum;
