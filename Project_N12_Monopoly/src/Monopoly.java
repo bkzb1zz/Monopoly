@@ -47,11 +47,70 @@ public class Monopoly {
 		}
 	}
 
+	private static void PlayersCount() {
+
+		boolean correctInput = true;
+
+		while (correctInput) {
+
+			System.out.print("Enter number of players between 1 and 4: ");
+			playersCount = sc2.nextInt();
+
+			if (playersCount >= 1 && playersCount <= 4) {
+
+				correctInput = false;
+
+			} else {
+
+				correctInput = true;
+
+			}
+		}
+	}
+
+	private static void PlayerNames() {
+
+		for (int i = 0; i < playersCount; i++) {
+
+			System.out.printf("Enter player N:%d name: ", i + 1);
+			playerNames[i] = sc.nextLine();
+
+			if (CorrectNameInput(playerNames[i])) {
+
+				continue;
+
+			} else {
+
+				System.out.println("Incorrect name has been inputted, please try again");
+				i--;
+
+			}
+		}
+
+		System.out.println();
+
+	}
+
+	private static boolean CorrectNameInput(String name) {
+
+		String regex = "^[a-zA-Z._-]{2,}$";
+
+		if (name.matches(regex)) {
+
+			return true;
+
+		} else {
+
+			return false;
+
+		}
+	}
+
 	private static void StartingMoney() {
 
 		for (int i = 0; i < playersCount; i++) {
 
-			playersMoney[i] = 500;
+			playersMoney[i] = 600;
 			hasMoney[i] = true;
 
 		}
@@ -70,6 +129,7 @@ public class Monopoly {
 				int moves = rd.nextInt(6) + 1;
 				System.out.printf("You have thrown: %d!\n", moves);
 				System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
+
 				if (isInJail[player] == true && moves == 6) {
 
 					System.out.println("Congratulations, you get out of JAIL, because you rolled 6");
@@ -86,7 +146,59 @@ public class Monopoly {
 			}
 		}
 	}
+	
+	private static int Move(int player, int moves) {
 
+		int temp;
+
+		if (isInJail[player] == false) {
+
+			temp = playersCurrentPosition[player] += moves;
+
+		} else {
+
+			temp = playersCurrentPosition[player] += 0;
+
+		}
+
+		if (temp < 40) {
+
+			return playersCurrentPosition[player];
+
+		} else {
+
+			System.out.println("You have passed the start and you get 200$");
+			playersMoney[player] += 200;
+			System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
+			return playersCurrentPosition[player] = playersCurrentPosition[player] - 40;
+
+		}
+	}
+
+	private static void IsInJail(int player) {
+
+		if (ownedProperties[playersCurrentPosition[player]] == -4) {
+
+			isInJail[player] = true;
+			System.out.printf(
+					"%s you are in JAIL, in order to escape you must have a OUT OF JAIL CARD or roll 6 on your next turn!\n",
+					playerNames[player]);
+
+			if (outOfJailCard[player] > 0) {
+
+				System.out.printf("You currently have %d cards!\n", outOfJailCard[player]);
+				System.out.print("Would you like to use 1 in order to get out? ");
+
+				if (sc3.nextLine().equalsIgnoreCase("yes")) {
+
+					isInJail[player] = false;
+					outOfJailCard[player] = outOfJailCard[player] - 1;
+
+				}
+			}
+		}
+	}
+	
 	private static void MoneyLending(int player) {
 
 		int temp = ownedProperties[playersCurrentPosition[player]];
@@ -136,7 +248,6 @@ public class Monopoly {
 								playerNames[player]);
 
 					}
-
 				}
 
 			} else if (ownedProperties[playersCurrentPosition[player]] == -1
@@ -163,109 +274,74 @@ public class Monopoly {
 
 				Random rd = new Random();
 				System.out.print("Card!\n");
-				int card = rd.nextInt(9) + 1;
+				int card = rd.nextInt(5) + 1;
 
 				switch (card) {
 
 				case 1:
-
 					outOfJailCard[player] += 1;
 					System.out.println("You have won OUT OF JAIL CARD!");
-					System.out.printf("You have %s!\n\n", outOfJailCard[player]);
+					System.out.printf("You currently have %d cards!\n\n", outOfJailCard[player]);
 					break;
 
 				case 2:
-
 					playersMoney[player] += 100;
 					System.out.println("You have won 100$!");
-					System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
+					PrintPlayerMoney(player);
 					break;
 
 				case 3:
-
 					playersMoney[player] += 200;
 					System.out.println("You have won 200$!");
-					System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
+					PrintPlayerMoney(player);
 					break;
 
 				case 4:
-
 					playersMoney[player] += 200;
 					playersCurrentPosition[player] = 0;
 					System.out.printf("You go to the %s and you get 200$\n", board[0]);
-					System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
+					PrintPlayerMoney(player);
 					break;
 
 				case 5:
-
 					playersCurrentPosition[player] = 10;
-					isInJail[player] = true;
-					System.out.printf("You go %s\n\n", board[playersCurrentPosition[player]]);
-					break;
-
-				case 6:
-
-					playersMoney[player] = playersMoney[player] - 100;
-					System.out.printf("Bad luck you have to pay 100$!\n");
-					System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
-					break;
-
-				case 7:
-
-					playersMoney[player] = playersMoney[player] - 200;
-					System.out.printf("Bad luck you have to pay 200$!\n");
-					System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
-					break;
-
-				case 8:
-
-					playersMoney[player] = playersMoney[player] - 200;
-					System.out.printf("Bad luck you have to pay 200$!\n");
-					System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
-					break;
-
-				case 9:
-
-					playersMoney[player] += 500;
-					System.out.println("You have won the lottery, which is 500$!");
-					System.out.printf("%s you have %d$!\n\n", playerNames[player], playersMoney[player]);
+					System.out.println("You go to JAIL\n!");
 					break;
 
 				}
 
-			}
+			} else if (ownedProperties[playersCurrentPosition[player]] == -3) {
 
-		} else if (ownedProperties[playersCurrentPosition[player]] == -3) {
+				System.out.printf("You are on the %s.\n\n", board[playersCurrentPosition[player]]);
 
-			System.out.printf("You are on the %s.\n\n", board[playersCurrentPosition[player]]);
+			} else if (ownedProperties[playersCurrentPosition[player]] != 0
+					&& ownedProperties[playersCurrentPosition[player]] != 1
+					&& ownedProperties[playersCurrentPosition[player]] != 2
+					&& ownedProperties[playersCurrentPosition[player]] != 3
+					&& ownedProperties[playersCurrentPosition[player]] != -4) {
 
-		} else if (ownedProperties[playersCurrentPosition[player]] != 0
-				&& ownedProperties[playersCurrentPosition[player]] != 1
-				&& ownedProperties[playersCurrentPosition[player]] != 2
-				&& ownedProperties[playersCurrentPosition[player]] != 3
-				&& ownedProperties[playersCurrentPosition[player]] != -4) {
+				System.out.printf("You are on %s, but you don't have enough money to buy this property!\n\n",
+						board[playersCurrentPosition[player]]);
 
-			System.out.printf("You are on %s, but you don't have enough money to buy this property!\n\n",
-					board[playersCurrentPosition[player]]);
+			} else if (ownedProperties[playersCurrentPosition[player]] == player) {
 
-		} else if (ownedProperties[playersCurrentPosition[player]] == player) {
+				System.out.printf(
+						"You are on %s which belongs to you. Would you like to sell it for half it's price, which is %d$? ",
+						board[playersCurrentPosition[player]], pricesAndTaxes[playersCurrentPosition[player]] / 2);
 
-			System.out.printf(
-					"You are on %s which belongs to you. Would you like to sell it for half it's price, which is %d$? ",
-					board[playersCurrentPosition[player]], pricesAndTaxes[playersCurrentPosition[player]] / 2);
+				if (sc3.nextLine().equalsIgnoreCase("yes")) {
 
-			if (sc3.nextLine().equalsIgnoreCase("yes")) {
+					ownedProperties[playersCurrentPosition[player]] = -1;
+					playersMoney[player] += pricesAndTaxes[playersCurrentPosition[player]] / 2;
+					System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
+					System.out.printf("You have sold %s for %d$\n\n", board[playersCurrentPosition[player]],
+							pricesAndTaxes[playersCurrentPosition[player]] / 2);
 
-				ownedProperties[playersCurrentPosition[player]] = -1;
-				playersMoney[player] += pricesAndTaxes[playersCurrentPosition[player]] / 2;
-				System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
-				System.out.printf("You have sold %s for %d$\n\n", board[playersCurrentPosition[player]],
-						pricesAndTaxes[playersCurrentPosition[player]] / 2);
+				} else {
 
-			} else {
+					System.out.println();
 
-				System.out.println();
-
+				}
 			}
 		}
 	}
@@ -284,118 +360,14 @@ public class Monopoly {
 			}
 
 		}
-		
+
 		return sum;
 
 	}
 
-	private static void IsInJail(int player) {
+	private static void PrintPlayerMoney(int player) {
 
-		if (ownedProperties[playersCurrentPosition[player]] == -4) {
+		System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
 
-			isInJail[player] = true;
-			System.out.printf("%s you are in JAIL, in order to escape you must have a OUT OF JAIL CARD or roll 6 on your next turn!\n",
-					playerNames[player]);
-			
-			if (outOfJailCard[player] > 0) {
-				
-				System.out.printf("You currently have %d cards!\n", outOfJailCard[player]);
-				System.out.print("Would you like to use 1 in order to get out? ");
-				
-				if (sc3.nextLine().equalsIgnoreCase("yes")) {
-					
-					isInJail[player] = false;
-					outOfJailCard[player] = outOfJailCard[player] - 1;
-					
-				}
-			}
-		}
-	}
-
-	private static int Move(int player, int moves) {
-
-		int temp;
-
-		if (isInJail[player] == false) {
-			
-			temp = playersCurrentPosition[player] += moves;
-			
-		} else {
-			
-			temp = playersCurrentPosition[player] += 0;
-			
-		}
-
-		if (temp < 40) {
-
-			return playersCurrentPosition[player];
-
-		} else {
-
-			System.out.println("You have passed the start and you get 200$");
-			playersMoney[player] += 200;
-			System.out.printf("%s you have %d$!\n", playerNames[player], playersMoney[player]);
-			return playersCurrentPosition[player] = playersCurrentPosition[player] - 40;
-
-		}
-	}
-
-	private static void PlayerNames() {
-
-		for (int i = 0; i < playersCount; i++) {
-
-			System.out.printf("Enter player N:%d name: ", i + 1);
-			playerNames[i] = sc.nextLine();
-
-			if (CorrectNameInput(playerNames[i])) {
-
-				continue;
-
-			} else {
-
-				System.out.println("Incorrect name has been inputted, please try again");
-				i--;
-
-			}
-		}
-
-		System.out.println();
-
-	}
-
-	private static boolean CorrectNameInput(String name) {
-
-		String regex = "^[a-zA-Z._-]{2,}$";
-
-		if (name.matches(regex)) {
-
-			return true;
-
-		} else {
-
-			return false;
-
-		}
-	}
-
-	private static void PlayersCount() {
-
-		boolean correctInput = true;
-
-		while (correctInput) {
-
-			System.out.print("Enter number of players between 1 and 4: ");
-			playersCount = sc2.nextInt();
-
-			if (playersCount >= 1 && playersCount <= 4) {
-
-				correctInput = false;
-
-			} else {
-
-				correctInput = true;
-
-			}
-		}
 	}
 }
